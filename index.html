@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script charset="utf-8"
+        src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+        type="application/javascript">
+ 	</script>
+
+ 	<style>
+	  body {
+	    font-family: Arial, Helvetica, sans-serif;
+	  }
+
+	  button {
+	    margin: 5px 0px 5px 0px;
+	  }
+	</style>
+
+	<title>Gasless dApp with Biconomy</title>
+</head>
+<body>
+	<h1>This is my first dApp!</h1>
+	<p>Here we can set or get the mood:</p>
+	<label for="mood">Input Mood:</label>
+	<input type="text" id="mood"/>
+	<div>
+		<button onclick="setMood()">set Mood</button>
+	</div>
+	<div>
+		<button onclick="getMood()">get Mood</button>
+	</div>
+
+    <label for="mood">set TrustedForwarder (only Owner):</label>
+    <input type="text" id="trustedForwarder"/>
+	<div>
+		<button onclick="setTrustedForwarder()">set TrustedForwarder</button>
+	</div>
+    <div>
+		<button onclick="getOwner()">get Owner</button>
+	</div>
+
+    <script type="text/javascript">
+        // A Web3Provider wraps a standard Web3 provider, which is
+        // what MetaMask injects as window.ethereum into each page
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "goerli");
+
+        const getsetMoodContractAddress = "0x699A93EB85A8650dcE9719620C5751EdF38531f4";
+
+        const getsetMoodContractABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_mood",
+                        "type": "string"
+                    }
+                ],
+                "name": "setMood",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_trustedForwarder",
+                        "type": "address"
+                    }
+                ],
+                "name": "setTrustedForwarder",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_trustedForwarder",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [],
+                "name": "getMood",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "forwarder",
+                        "type": "address"
+                    }
+                ],
+                "name": "isTrustedForwarder",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "owner",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        // The MetaMask plugin also allows signing transactions to
+        // send ether and pay to change state within the blockchain.
+        // For this, you need the account signer...
+
+        let getsetMoodContract;
+        let signer;
+
+        provider.send("eth_requestAccounts", []).then(() => {
+            provider.listAccounts().then((accounts) => {
+            signer = provider.getSigner(accounts[0]);
+            getsetMoodContract = new ethers.Contract(
+                getsetMoodContractAddress,
+                getsetMoodContractABI,
+                signer
+            );
+            });
+        });
+
+        async function getMood() {
+            const Mood = await getsetMoodContract.getMood();
+            alert(Mood);
+        }
+
+        async function setMood() {
+            const mood = document.getElementById("mood").value;
+            await getsetMoodContract.setMood(mood);
+        }
+
+        async function setTrustedForwarder() {
+            const trustedForwarder = document.getElementById("trustedForwarder").value;
+            await getsetMoodContract.setTrustedForwarder(trustedForwarder.toString());
+        }
+
+        async function getOwner() {
+            const owner = await getsetMoodContract.owner();
+            alert(owner);
+        }
+    </script>
+</body>
+</html>
